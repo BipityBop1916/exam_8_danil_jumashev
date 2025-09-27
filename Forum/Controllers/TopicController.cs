@@ -1,5 +1,6 @@
 ﻿using Forum.Data;
 using Forum.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forum.Controllers;
@@ -27,12 +28,14 @@ public class TopicController : Controller
         return View(items);
     }
 
+    [Authorize]
     [HttpGet]
     public IActionResult Create()
     {
         return View();
     }
 
+    [Authorize]
     [HttpPost]
     public IActionResult Create(string Title, string Content)
     {
@@ -46,7 +49,7 @@ public class TopicController : Controller
         {
             Title = Title.Trim(),
             Content = Content.Trim(),
-            AuthorName = "TEMP_USER"
+            AuthorName = User.Identity!.Name ?? "Unknown"
         };
 
         _db.Topics.Add(topic);
