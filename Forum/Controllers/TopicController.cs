@@ -1,18 +1,23 @@
 ﻿using Forum.Data;
 using Forum.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Forum.Controllers;
 
 public class TopicController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly UserManager<ApplicationUser> _userManager;
     private const int PageSize = 10;
 
-    public TopicController(ApplicationDbContext db)
+    public TopicController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
     {
         _db = db;
+        _userManager = userManager;
     }
 
     public IActionResult Index(int page = 1)
@@ -57,10 +62,40 @@ public class TopicController : Controller
         return RedirectToAction("Index");
     }
 
+    [HttpGet]
     public IActionResult Details(int id)
     {
-        var topic = _db.Topics.FirstOrDefault(t => t.Id == id);
+        var topic = _db.Topics
+            .Include(t => t.Replies)
+            .ThenInclude(r => r.User)
+            .FirstOrDefault(t => t.Id == id);
+
         if (topic == null) return NotFound();
+
         return View(topic);
     }
+    
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> PostReply(int topicId, string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return BadRequest("Content cannot be empty.");
+
+        var userId = _userManager.GetUserId(User);
+
+        var reply = new Reply
+        {
+            TopicId = topicId,
+            Content = content.Trim(),
+            UserId = userId
+        };
+
+        _db.Replies.Add(reply);
+        await _db.SaveChangesAsync();
+
+        await _db.Entry(reply).Reference(r => r.User).LoadAsync();
+        return PartialView("_ReplyPartial", reply);
+    }
+
 }

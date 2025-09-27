@@ -7,20 +7,63 @@
 
 <div class="container mt-4">
     <nav>
-        <a href="@Url.Action("Index")">Главная</a> /
-        <span>@Model.Title</span>
+        <a href="@Url.Action("Index")">Home</a> / <span>@Model.Title</span>
     </nav>
 
     <h2>@Model.Title</h2>
     <small class="text-muted">
-        @Model.CreatedAt.ToString("dd.MM.yyyy") — Автор: @Model.AuthorName
+        @Model.CreatedAt.ToString("dd.MM.yyyy") — Author: @Model.AuthorName
     </small>
 
     <article class="mt-3 p-3 border rounded">
         @Html.Raw(Model.Content.Replace("\n", "<br />"))
     </article>
 
-    <div class="alert alert-info mt-3">
-        comment placeholder
+    <hr />
+    <h4>Replies</h4>
+    <div id="replies">
+        @foreach (var r in Model.Replies.OrderBy(r => r.CreatedAt))
+        {
+            @await Html.PartialAsync("_ReplyPartial", r)
+        }
     </div>
+
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <div class="mt-3">
+            <textarea id="replyContent" class="form-control mb-2" rows="3" placeholder="Write a reply..."></textarea>
+            <button id="btnReply" class="btn btn-primary" data-topic-id="@Model.Id">Reply</button>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        const btn = document.getElementById("btnReply");
+        btn?.addEventListener("click", async () => {
+            const topicId = btn.dataset.topicId;
+            const content = document.getElementById("replyContent").value;
+
+            if (!content.trim()) return;
+
+            const formData = new FormData();
+            formData.append("topicId", topicId);
+            formData.append("content", content);
+
+            const res = await fetch("@Url.Action("PostReply")", {
+                method: "POST",
+                body: formData,
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+
+            if (res.ok) {
+                const html = await res.text();
+                const repliesDiv = document.getElementById("replies");
+                repliesDiv.insertAdjacentHTML("beforeend", html);
+                document.getElementById("replyContent").value = "";
+            } else {
+                alert("Failed to post reply.");
+            }
+        });
+    </script>
+}

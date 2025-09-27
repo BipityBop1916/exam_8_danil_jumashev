@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Topic> Topics => Set<Topic>();
+    public DbSet<Reply> Replies => Set<Reply>();
     
     protected override void OnModelCreating(ModelBuilder builder)
     {

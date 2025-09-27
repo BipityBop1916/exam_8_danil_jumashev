@@ -2,19 +2,18 @@
 
 namespace Forum.Models;
 
-public class Topic
+public class Reply
 {
     public int Id { get; set; }
-
-    [Required, MaxLength(160)]
-    public string Title { get; set; }
 
     [Required]
     public string Content { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public string AuthorName { get; set; }
-    
-    public ICollection<Reply> Replies { get; set; } = new List<Reply>();
+    public int TopicId { get; set; }
+    public Topic Topic { get; set; }
+
+    public string UserId { get; set; }
+    public ApplicationUser User { get; set; }
 }

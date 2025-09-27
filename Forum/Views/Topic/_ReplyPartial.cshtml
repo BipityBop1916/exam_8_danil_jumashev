@@ -1,0 +1,13 @@
+﻿@model Forum.Models.Reply
+
+<div class="card mb-2">
+    <div class="card-body d-flex">
+        <img src="@Model.User.AvatarPath ?? '/images/default-avatar.png' " 
+             class="rounded-circle me-2" width="40" height="40" />
+        <div>
+            <strong>@Model.User.UserName</strong>
+            <small class="text-muted ms-2">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+            <p class="mb-0">@Model.Content</p>
+        </div>
+    </div>
+</div>
