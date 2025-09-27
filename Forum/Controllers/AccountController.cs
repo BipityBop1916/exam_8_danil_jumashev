@@ -1,24 +1,29 @@
-﻿using Forum.Models;
+﻿using Forum.Data;
+using Forum.Models;
 using Forum.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Controllers;
 
 public class AccountController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ApplicationDbContext _context;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IWebHostEnvironment _env;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            ApplicationDbContext context,
             IWebHostEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
             _env = env;
         }
 
@@ -103,10 +108,25 @@ public class AccountController : Controller
         }
 
         [Authorize]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            return View();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            // Count topics created by user
+            var topicCount = await _context.Topics
+                .CountAsync(t => t.AuthorName == user.UserName);
+
+            var model = new ProfileViewModel
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                AvatarPath = user.AvatarPath ?? "/images/default-avatar.png",
+            };
+
+            return View(model);
         }
+
 
         public IActionResult AccessDenied() => View();
 }
