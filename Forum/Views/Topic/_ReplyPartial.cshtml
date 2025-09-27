@@ -2,7 +2,7 @@
 
 <div class="card mb-2">
     <div class="card-body d-flex">
-        <img src="@Model.User.AvatarPath ?? '/images/default-avatar.png' " 
+        <img src="@(string.IsNullOrWhiteSpace(@Model.User.AvatarPath) ? "/images/default-avatar.png" : @Model.User.AvatarPath)" 
              class="rounded-circle me-2" width="40" height="40" />
         <div>
             <strong>@Model.User.UserName</strong>
