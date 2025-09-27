@@ -12,7 +12,7 @@ public class TopicController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
-    private const int PageSize = 10;
+    private const int PageSize = 8;
 
     public TopicController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
     {
@@ -63,7 +63,7 @@ public class TopicController : Controller
     }
 
     [HttpGet]
-    public IActionResult Details(int id)
+    public IActionResult Details(int id, int page = 1)
     {
         var topic = _db.Topics
             .Include(t => t.Replies)
@@ -71,6 +71,19 @@ public class TopicController : Controller
             .FirstOrDefault(t => t.Id == id);
 
         if (topic == null) return NotFound();
+        
+        var totalReplies = topic.Replies.Count;
+        var totalPages = (int)Math.Ceiling((double)totalReplies / PageSize);
+        var replies = topic.Replies
+            .OrderBy(r => r.CreatedAt)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+
+        ViewBag.TopicReplies = replies;
 
         return View(topic);
     }
