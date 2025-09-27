@@ -1,0 +1,26 @@
+﻿@model Forum.Models.Topic
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <nav>
+        <a href="@Url.Action("Index")">Главная</a> /
+        <span>@Model.Title</span>
+    </nav>
+
+    <h2>@Model.Title</h2>
+    <small class="text-muted">
+        @Model.CreatedAt.ToString("dd.MM.yyyy") — Автор: @Model.AuthorName
+    </small>
+
+    <article class="mt-3 p-3 border rounded">
+        @Html.Raw(Model.Content.Replace("\n", "<br />"))
+    </article>
+
+    <div class="alert alert-info mt-3">
+        comment placeholder
+    </div>
+</div>

@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Forum.Models.Topic>
+
+@{
+    var page = (int)ViewBag.Page;
+    var total = (int)ViewBag.Total;
+    var size = (int)ViewBag.PageSize;
+    var totalPages = (int)Math.Ceiling((double)total / size);
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Темы</h2>
+        <a class="btn btn-primary" href="@Url.Action("Create")">Создать тему</a>
+    </div>
+
+    <div class="list-group">
+        @foreach (var t in Model)
+        {
+            <a href="@Url.Action("Details", new { id = t.Id })" class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between">
+                    <h5>@t.Title</h5>
+                    <small>@t.CreatedAt.ToString("dd.MM.yyyy")</small>
+                </div>
+                <div class="text-muted">Автор: @t.AuthorName</div>
+            </a>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav class="mt-3">
+            <ul class="pagination">
+                <li class="page-item @(page == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = page - 1 })">Prev</a>
+                </li>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == page ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                    </li>
+                }
+                <li class="page-item @(page == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = page + 1 })">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
